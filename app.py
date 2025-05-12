@@ -28,14 +28,26 @@ def normalize_co2(co2_value, low=350, high=450):
     normalized = (co2_value - low) / (high - low)
     return min(max(normalized, 0), 1)
 
-# Get latest CO₂ level and calculate threat
+# === Simulated Forest Loss Logic (stand-in for live API) ===
+def fetch_forest_loss():
+    return 800000  # hectares lost (placeholder)
+
+def normalize_forest_loss(loss_area, max_loss=1000000):
+    normalized = loss_area / max_loss
+    return min(max(normalized, 0), 1)
+
+# Fetch live CO2 data
 latest_co2 = fetch_latest_co2()
 if latest_co2 is not None:
     co2_threat_level = normalize_co2(latest_co2)
 else:
     st.stop()
 
-# === Threat Data with Live Atmosphere ===
+# Fetch mock forest loss data
+latest_forest_loss = fetch_forest_loss()
+forest_threat_level = normalize_forest_loss(latest_forest_loss)
+
+# === Build Threat Data ===
 data = {
     "System": [
         "Atmosphere",
@@ -48,7 +60,7 @@ data = {
     "Threat Level": [
         co2_threat_level,
         0.62,
-        0.56,
+        forest_threat_level,
         0.41,
         0.49,
         0.65
