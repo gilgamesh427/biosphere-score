@@ -51,14 +51,29 @@ def normalize_forest_loss(loss_area, max_loss=1000000):
 
 # === Fetch Sea Surface Temperature from NOAA ===
 def fetch_latest_sst():
-    try:
-        url = 'https://www.ncei.noaa.gov/data/sea-surface-temperature-optimum-interpolation/access/avhrr/2024/03/oisst-avhrr-v02r01.20240301.nc'
-        ds = xr.open_dataset(url)
-        sst_celsius = ds['sst'].mean().item() - 273.15
-        return round(sst_celsius, 2)
-    except Exception as e:
-        st.error(f"⚠️ Failed to fetch SST data: {e}")
-        return None
+    from datetime import datetime, timedelta
+
+def fetch_latest_sst(max_attempts=5):
+    base_url = 'https://www.ncei.noaa.gov/data/sea-surface-temperature-optimum-interpolation/access/avhrr'
+    
+    for days_ago in range(max_attempts):
+        try_date = datetime.utcnow() - timedelta(days=days_ago + 2)  # slight delay to ensure NOAA has uploaded
+        date_str = try_date.strftime('%Y%m%d')
+        year = try_date.strftime('%Y')
+        month = try_date.strftime('%m')
+
+        url = f"{base_url}/{year}/{month}/oisst-avhrr-v02r01.{date_str}.nc"
+        
+        try:
+            ds = xr.open_dataset(url)
+            sst_celsius = ds['sst'].mean().item() - 273.15
+            return round(sst_celsius, 2)
+        except Exception:
+            continue  # Try previous day
+
+    st.error("⚠️ Failed to fetch any recent SST data from NOAA.")
+    return None
+
 
 def normalize_sst(sst_value, low=26, high=30):
     normalized = (sst_value - low) / (high - low)
