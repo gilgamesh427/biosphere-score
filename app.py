@@ -52,7 +52,7 @@ def normalize_forest_loss(loss_area, max_loss=1000000):
 # === Fetch Sea Surface Temperature from NOAA ===
 def fetch_latest_sst():
     try:
-        url = 'https://www.ncei.noaa.gov/data/sea-surface-temperature-optimum-interpolation/access/avhrr/2024/04/oisst-avhrr-v02r01.20240401.nc'
+        url = 'https://www.ncei.noaa.gov/data/sea-surface-temperature-optimum-interpolation/access/avhrr/2024/03/oisst-avhrr-v02r01.20240301.nc'
         ds = xr.open_dataset(url)
         sst_celsius = ds['sst'].mean().item() - 273.15
         return round(sst_celsius, 2)
