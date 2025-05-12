@@ -21,7 +21,7 @@ def fetch_latest_co2():
         df = pd.read_csv(StringIO('\n'.join(lines)), header=None)
         df = df.iloc[:, :7]
         df.columns = ['Year', 'Month', 'Decimal Date', 'Average', 'Interpolated', 'Trend', 'Number of Days']
-        latest_co2 = df.iloc[-1]['Average']
+        latest_co2 = float(df.iloc[-1]['Average'])
         return latest_co2
     else:
         st.error("⚠️ Failed to fetch CO₂ data from NOAA.")
