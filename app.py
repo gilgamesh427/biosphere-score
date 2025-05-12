@@ -15,7 +15,11 @@ def fetch_latest_co2():
     response = requests.get(url)
     if response.status_code == 200:
         data = response.text
-        df = pd.read_csv(StringIO(data), comment='#', header=None)
+        # Skip comment lines and parse only real data rows
+        lines = [line for line in data.splitlines() if not line.startswith('#')]
+        df = pd.read_csv(StringIO('\n'.join(lines)), header=None)
+        # Use only first 7 expected columns if extras are present
+        df = df.iloc[:, :7]
         df.columns = ['Year', 'Month', 'Decimal Date', 'Average', 'Interpolated', 'Trend', 'Number of Days']
         latest_co2 = df.iloc[-1]['Average']
         return latest_co2
@@ -149,3 +153,7 @@ st.subheader("Want to Contribute?")
 st.markdown("This AI is learning in public. If you’re a researcher, designer, or technologist and want to shape the way AI supports planetary recovery—reach out.")
 
 st.markdown("_This system is growing. So are we._")
+
+
+
+
