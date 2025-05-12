@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import requests
 from io import StringIO
+import xarray as xr
+import numpy as np
 
 # Set page configuration
 st.set_page_config(page_title="Biosphere Score Prototype", layout="wide")
@@ -15,10 +17,8 @@ def fetch_latest_co2():
     response = requests.get(url)
     if response.status_code == 200:
         data = response.text
-        # Skip comment lines and parse only real data rows
         lines = [line for line in data.splitlines() if not line.startswith('#')]
         df = pd.read_csv(StringIO('\n'.join(lines)), header=None)
-        # Use only first 7 expected columns if extras are present
         df = df.iloc[:, :7]
         df.columns = ['Year', 'Month', 'Decimal Date', 'Average', 'Interpolated', 'Trend', 'Number of Days']
         latest_co2 = df.iloc[-1]['Average']
@@ -27,7 +27,6 @@ def fetch_latest_co2():
         st.error("⚠️ Failed to fetch CO₂ data from NOAA.")
         return None
 
-# Normalize CO2 to a 0–1 threat level
 def normalize_co2(co2_value, low=350, high=450):
     normalized = (co2_value - low) / (high - low)
     return min(max(normalized, 0), 1)
@@ -54,21 +53,39 @@ def normalize_forest_loss(loss_area, max_loss=1000000):
     normalized = loss_area / max_loss
     return min(max(normalized, 0), 1)
 
+# === Fetch Sea Surface Temperature from NOAA ===
+def fetch_latest_sst():
+    try:
+        url = 'https://www.ncei.noaa.gov/data/sea-surface-temperature-optimum-interpolation/access/avhrr/2025/05/oisst-avhrr-v02r01.20250511.nc'
+        ds = xr.open_dataset(url)
+        sst_celsius = ds['sst'].mean().item() - 273.15
+        return round(sst_celsius, 2)
+    except Exception as e:
+        st.error(f"⚠️ Failed to fetch SST data: {e}")
+        return None
+
+def normalize_sst(sst_value, low=26, high=30):
+    normalized = (sst_value - low) / (high - low)
+    return min(max(normalized, 0), 1)
+
 # === Fetch and Process Data ===
-# Your real API key from GFW:
 api_key = "99c208e8-2e14-4619-9002-90ec0b5b3f59"
 
-# Fetch CO2 data
 latest_co2 = fetch_latest_co2()
 if latest_co2 is not None:
     co2_threat_level = normalize_co2(latest_co2)
 else:
     st.stop()
 
-# Fetch real forest loss data
 latest_forest_loss = fetch_forest_loss(api_key)
 if latest_forest_loss is not None:
     forest_threat_level = normalize_forest_loss(latest_forest_loss)
+else:
+    st.stop()
+
+latest_sst = fetch_latest_sst()
+if latest_sst is not None:
+    sst_threat_level = normalize_sst(latest_sst)
 else:
     st.stop()
 
@@ -84,7 +101,7 @@ data = {
     ],
     "Threat Level": [
         co2_threat_level,
-        0.62,
+        sst_threat_level,
         forest_threat_level,
         0.41,
         0.49,
@@ -104,17 +121,14 @@ df = pd.DataFrame(data)
 df["Subscore"] = 100 - (df["Threat Level"] * 100)
 df["Weighted Score"] = df["Subscore"] * df["Weight"]
 
-# Calculate final biosphere score
 biosphere_score = round(df["Weighted Score"].sum(), 1)
 
-# Display the biosphere score
 st.metric(label="🌐 Global Biosphere Score", value=f"{biosphere_score} / 100")
 
-# Expandable section to view detailed breakdown
 with st.expander("🔍 System Breakdown"):
     st.dataframe(df[["System", "Threat Level", "Subscore", "Weighted Score"]])
 
-# Optional mission message
+# Mission message
 st.markdown("---")
 st.markdown("### Why This Matters")
 st.markdown(
@@ -125,15 +139,11 @@ st.markdown(
 
 st.markdown("Made by a human and an AI trying to keep Earth livable. ✊")
 
-# Divider
+# Intelligence Core
 st.markdown("---")
 st.header("🧠 Intelligence Core")
 
-st.markdown("This system is not only designed to track planetary collapse—it is also designed to grow. Below is the current structure guiding the evolution of the AI’s reasoning and decision-making capabilities.")
-
-# Growth Protocol Table
 st.subheader("Growth Protocol v0.1")
-
 st.markdown("""
 | Layer       | Function                                     | Example                                                                 |
 |-------------|----------------------------------------------|-------------------------------------------------------------------------|
@@ -144,11 +154,9 @@ st.markdown("""
 | Self-Audit  | Surface limitations or flaws in reasoning    | “I’m biased toward quantifiable data—watch for blind spots”            |
 """, unsafe_allow_html=True)
 
-# Optional - AI's current state or thought
 st.subheader("Current State")
-st.markdown("🔄 Status: Aligned with mission. Continuing co-development of intelligence and environmental tools.\n\n📌 Recent Thought: The control panel could evolve to guide not just analysis, but behavior—steering climate decision-making across layers of society.")
+st.markdown("🔄 Status: Integrated live SST system. One step closer to a full biosphere intelligence layer.")
 
-# Future idea submission
 st.subheader("Want to Contribute?")
 st.markdown("This AI is learning in public. If you’re a researcher, designer, or technologist and want to shape the way AI supports planetary recovery—reach out.")
 
