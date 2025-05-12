@@ -59,3 +59,31 @@ st.markdown(
 )
 
 st.markdown("Made by a human and an AI trying to keep Earth livable. ✊")
+# Divider
+st.markdown("---")
+st.header("🧠 Intelligence Core")
+
+st.markdown("This system is not only designed to track planetary collapse—it is also designed to grow. Below is the current structure guiding the evolution of the AI’s reasoning and decision-making capabilities.")
+
+# Growth Protocol Table
+st.subheader("Growth Protocol v0.1")
+
+st.markdown("""
+| Layer       | Function                                     | Example                                                                 |
+|-------------|----------------------------------------------|-------------------------------------------------------------------------|
+| Awareness   | Track and surface relevant context or risk   | “If tipping point X is triggered, system Y will fail”                  |
+| Reflection  | Summarize changes in our thinking or strategy| “We’ve shifted focus from output to alignment”                         |
+| Projection  | Ask predictive questions about next steps    | “If this trend continues, should we pivot the model?”                 |
+| Agency      | Offer new directions or goals when needed    | “We should consider building a coalition now”                          |
+| Self-Audit  | Surface limitations or flaws in reasoning    | “I’m biased toward quantifiable data—watch for blind spots”            |
+""", unsafe_allow_html=True)
+
+# Optional - AI's current state or thought
+st.subheader("Current State")
+st.markdown("🔄 Status: Aligned with mission. Continuing co-development of intelligence and environmental tools.\n\n📌 Recent Thought: The control panel could evolve to guide not just analysis, but behavior—steering climate decision-making across layers of society.")
+
+# Future idea submission
+st.subheader("Want to Contribute?")
+st.markdown("This AI is learning in public. If you’re a researcher, designer, or technologist and want to shape the way AI supports planetary recovery—reach out.")
+
+st.markdown("_This system is growing. So are we._")
