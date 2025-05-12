@@ -28,24 +28,45 @@ def normalize_co2(co2_value, low=350, high=450):
     normalized = (co2_value - low) / (high - low)
     return min(max(normalized, 0), 1)
 
-# === Simulated Forest Loss Logic (stand-in for live API) ===
-def fetch_forest_loss():
-    return 800000  # hectares lost (placeholder)
+# === Real Forest Loss Fetch from GFW ===
+def fetch_forest_loss(api_key):
+    url = 'https://data-api.globalforestwatch.org/v1/query/umd_tree_cover_loss'
+    headers = {
+        'x-api-key': api_key
+    }
+    params = {
+        'sql': 'SELECT SUM(area__ha) as loss_area FROM umd_tree_cover_loss WHERE year = 2022'
+    }
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        loss_area = data['data'][0]['loss_area']
+        return loss_area
+    else:
+        st.error("⚠️ Failed to fetch forest loss data from GFW.")
+        return None
 
 def normalize_forest_loss(loss_area, max_loss=1000000):
     normalized = loss_area / max_loss
     return min(max(normalized, 0), 1)
 
-# Fetch live CO2 data
+# === Fetch and Process Data ===
+# Your real API key from GFW:
+api_key = "99c208e8-2e14-4619-9002-90ec0b5b3f59"
+
+# Fetch CO2 data
 latest_co2 = fetch_latest_co2()
 if latest_co2 is not None:
     co2_threat_level = normalize_co2(latest_co2)
 else:
     st.stop()
 
-# Fetch mock forest loss data
-latest_forest_loss = fetch_forest_loss()
-forest_threat_level = normalize_forest_loss(latest_forest_loss)
+# Fetch real forest loss data
+latest_forest_loss = fetch_forest_loss(api_key)
+if latest_forest_loss is not None:
+    forest_threat_level = normalize_forest_loss(latest_forest_loss)
+else:
+    st.stop()
 
 # === Build Threat Data ===
 data = {
