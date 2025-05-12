@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import requests
+from io import StringIO
 
 # Set page configuration
 st.set_page_config(page_title="Biosphere Score Prototype", layout="wide")
@@ -7,35 +9,33 @@ st.set_page_config(page_title="Biosphere Score Prototype", layout="wide")
 st.title("🌍 Biosphere Control Panel – Score Prototype v0.1")
 st.markdown("**Real-time planetary health index based on key environmental systems.**")
 
-# Mock data for biosphere systems
-# Live (mocked) CO₂ data from recent years
-co2_data = {
-    "Date": [
-        "2020-01-01",
-        "2021-01-01",
-        "2022-01-01",
-        "2023-01-01",
-        "2024-01-01"
-    ],
-    "CO2_ppm": [
-        413.4,
-        416.1,
-        419.2,
-        421.8,
-        424.1
-    ]
-}
+# === Live CO₂ Data Fetch from NOAA ===
+def fetch_latest_co2():
+    url = 'https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.csv'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.text
+        df = pd.read_csv(StringIO(data), comment='#', header=None)
+        df.columns = ['Year', 'Month', 'Decimal Date', 'Average', 'Interpolated', 'Trend', 'Number of Days']
+        latest_co2 = df.iloc[-1]['Average']
+        return latest_co2
+    else:
+        st.error("⚠️ Failed to fetch CO₂ data from NOAA.")
+        return None
 
 # Normalize CO2 to a 0–1 threat level
 def normalize_co2(co2_value, low=350, high=450):
     normalized = (co2_value - low) / (high - low)
     return min(max(normalized, 0), 1)
 
-# Calculate latest CO₂ threat level
-latest_co2 = co2_data["CO2_ppm"][-1]
-co2_threat_level = normalize_co2(latest_co2)
+# Get latest CO₂ level and calculate threat
+latest_co2 = fetch_latest_co2()
+if latest_co2 is not None:
+    co2_threat_level = normalize_co2(latest_co2)
+else:
+    st.stop()
 
-# Updated threat levels (Atmosphere now live)
+# === Threat Data with Live Atmosphere ===
 data = {
     "System": [
         "Atmosphere",
@@ -87,6 +87,7 @@ st.markdown(
 )
 
 st.markdown("Made by a human and an AI trying to keep Earth livable. ✊")
+
 # Divider
 st.markdown("---")
 st.header("🧠 Intelligence Core")
