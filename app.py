@@ -46,8 +46,8 @@ def fetch_forest_loss(api_key):
         loss_area = data['data'][0]['loss_area']
         return loss_area
     else:
-        st.error("⚠️ Failed to fetch forest loss data from GFW.")
-        return None
+    st.error(f"⚠️ GFW Error {response.status_code}: {response.text}")
+    return None
 
 def normalize_forest_loss(loss_area, max_loss=1000000):
     normalized = loss_area / max_loss
