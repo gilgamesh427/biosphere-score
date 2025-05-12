@@ -8,6 +8,34 @@ st.title("🌍 Biosphere Control Panel – Score Prototype v0.1")
 st.markdown("**Real-time planetary health index based on key environmental systems.**")
 
 # Mock data for biosphere systems
+# Live (mocked) CO₂ data from recent years
+co2_data = {
+    "Date": [
+        "2020-01-01",
+        "2021-01-01",
+        "2022-01-01",
+        "2023-01-01",
+        "2024-01-01"
+    ],
+    "CO2_ppm": [
+        413.4,
+        416.1,
+        419.2,
+        421.8,
+        424.1
+    ]
+}
+
+# Normalize CO2 to a 0–1 threat level
+def normalize_co2(co2_value, low=350, high=450):
+    normalized = (co2_value - low) / (high - low)
+    return min(max(normalized, 0), 1)
+
+# Calculate latest CO₂ threat level
+latest_co2 = co2_data["CO2_ppm"][-1]
+co2_threat_level = normalize_co2(latest_co2)
+
+# Updated threat levels (Atmosphere now live)
 data = {
     "System": [
         "Atmosphere",
@@ -18,7 +46,7 @@ data = {
         "Feedback Risk"
     ],
     "Threat Level": [
-        0.53,
+        co2_threat_level,
         0.62,
         0.56,
         0.41,
