@@ -1,2 +1,6 @@
 streamlit
 pandas
+requests
+xarray
+netCDF4
+numpy
